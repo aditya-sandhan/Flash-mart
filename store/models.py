@@ -6,7 +6,8 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     decay_rate  = models.FloatField(help_text="Decay rate per unit time (e.g., 0.1 for 10% per hour)")
     decay_unit = models.CharField(max_length=1, choices=[('H', 'Hourly'), ('D', 'Daily')]) # Fixed choices so that there is no error in input
-
+    class Meta:
+        verbose_name_plural = "Categories"
     def __str__(self):
         return self.name.capitalize() #Hamesha First letter Capital dikhayega
     
