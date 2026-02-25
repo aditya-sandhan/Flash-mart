@@ -14,6 +14,7 @@ class Category(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='products/', null=True, blank=True)
     # Shopkeeper link add kiya
     shopkeeper = models.ForeignKey('Shopkeeper', on_delete=models.CASCADE, related_name='products', null=True)
     
@@ -23,6 +24,21 @@ class Product(models.Model):
     original_price = models.FloatField()
     expiry_time = models.DateTimeField() # Name kept as expiry_time
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def time_left(self):
+        now = timezone.now()
+        if now >= self.expiry_time:
+            return "Expired"
+        
+        delta = self.expiry_time - now
+        total_hours = int(delta.total_seconds() // 3600)
+        days = delta.days
+
+        if not self.category or self.category.decay_unit == 'H':
+            return f"Ends in {total_hours}h"
+        else:
+            return f"Ends in {max(1, days)}d"
 
     @property
     def current_price(self):

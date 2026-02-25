@@ -1,5 +1,6 @@
-from django.shortcuts import render, redirect
-from .models import Product, Shopkeeper
+# Short imports including helper and Category
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Product, Shopkeeper, Category
 from django.utils import timezone # For handling dates
 # Create your views here.
 
@@ -14,30 +15,28 @@ def home(request):
 def select_role(request):
     return render(request, 'role_selection.html')
 
-def customer_signup(request):
-    return render(request, 'customer_signup.html')
 
 
 def shopkeeper_signup(request):
     if request.method == 'POST':
-       
         name = request.POST.get('name')
         email = request.POST.get('email')
         shop_name = request.POST.get('shop_name')
         address = request.POST.get('address')
         password = request.POST.get('password')
 
-        # database save
-        Shopkeeper.objects.create(
-            full_name=name,
-            email=email,
-            shop_name=shop_name,
-            address=address,
-            password=password
+        # 1. Save to database and capture the object
+        new_shop = Shopkeeper.objects.create(
+            full_name=name, email=email, shop_name=shop_name,
+            address=address, password=password
         )
 
-       
-        return redirect('home')
+        # 2. AUTO-LOGIN: Set the session variables immediately
+        request.session['user_role'] = 'shopkeeper'
+        request.session['user_id'] = new_shop.id
+
+        # 3. Redirect to their new dashboard
+        return redirect('shop_dashboard')
 
     return render(request, 'shopkeeper_signup.html')
 
@@ -49,11 +48,10 @@ def customer_signup(request):
         name = request.POST.get('name')
         email = request.POST.get('email')
         password = request.POST.get('password')
-        
-        
+
         print(f"New Customer: {name} ({email})")
         return redirect('home')
-        
+
     return render(request, 'customer_signup.html')
 
 
@@ -100,8 +98,17 @@ def shop_dashboard(request):
     # PASS PRODUCTS TO TEMPLATE
     return render(request, 'shop_dashboard.html', {'shop': shop, 'products': products})
 
+def products_list(request):
+    """Show all products (used by 'View All Deals' links)."""
+    products = Product.objects.all().order_by('-created_at')
+    return render(request, 'home.html', {'products': products})
 
-from .models import Product, Shopkeeper, Category # Category ko import karna mat bhoolna
+
+def product_detail(request, product_id):
+    """Basic product detail view (creates a simple product page)."""
+    product = get_object_or_404(Product, id=product_id)
+    return render(request, 'product_detail.html', {'product': product})
+
 
 def add_product(request):
     """Synchronized Save Logic with Dynamic Categories"""
