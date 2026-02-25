@@ -1,0 +1,31 @@
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow p-4">
+                <h3 class="fw-bold mb-4">Inventory Management 📦</h3>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Product Name</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">MRP (Original)</label>
+                            <input type="number" name="mrp" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Initial Discount Price</label>
+                            <input type="number" name="start_price" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Expiry Date & Time</label>
+                        <input type="datetime-local" name="expiry" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">List Product Live</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
-from .models import Product
-from .models import Shopkeeper
+from .models import Product, Shopkeeper
+from django.utils import timezone # For handling dates
 # Create your views here.
 
 def home(request):
@@ -87,3 +87,48 @@ def login_view(request):
         return render(request, 'login.html', {'error': 'Invalid Email or Password'})
 
     return render(request, 'login.html')
+
+def shop_dashboard(request):
+    """
+    Secures the dashboard and displays shop-specific data. [cite: 2025-12-26]
+    """
+    # Security Check: Only allow logged-in shopkeepers [cite: 2025-12-26]
+    if request.session.get('user_role') != 'shopkeeper':
+        return redirect('login')
+
+    # Fetch shop data using session ID [cite: 2025-12-26]
+    shop = Shopkeeper.objects.get(id=request.session['user_id'])
+    return render(request, 'shop_dashboard.html', {'shop': shop})
+
+
+
+def add_product(request):
+    """
+    Handles secure product creation by the logged-in shopkeeper. [cite: 2025-12-26]
+    """
+    # 1. Access security: Only shopkeepers can add products [cite: 2025-12-26]
+    if request.session.get('user_role') != 'shopkeeper':
+        return redirect('login')
+
+    if request.method == 'POST':
+        # 2. Extract data from form [cite: 2025-12-26]
+        p_name = request.POST.get('name')
+        mrp = request.POST.get('mrp')
+        current_p = request.POST.get('start_price')
+        exp_date = request.POST.get('expiry')
+
+        # 3. Link product to the specific shopkeeper [cite: 2025-12-26]
+        owner = Shopkeeper.objects.get(id=request.session['user_id'])
+
+        # 4. Save to Database [cite: 2025-12-26]
+        Product.objects.create(
+            name=p_name,
+            original_price=mrp,
+            current_price=current_p,
+            expiry_date=exp_date,
+            # (Note: Ensure your Product model has a Foreignkey to Shopkeeper)
+        )
+        
+        return redirect('shop_dashboard')
+
+    return render(request, 'add_product_form.html')

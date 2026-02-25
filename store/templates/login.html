@@ -1,0 +1,32 @@
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card shadow border-0 p-4">
+                <h3 class="text-center fw-bold">Flash-Mart Login</h3>
+                <p class="text-center text-muted small">Access your personalized marketplace</p>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Email Address</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Password</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+
+                    {% if error %}
+                    <div class="alert alert-danger py-2 small">{{ error }}</div>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-dark w-100 py-2">Sign In</button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <a href="{% url 'select_role' %}" class="small text-decoration-none">New here? Create Account</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
