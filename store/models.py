@@ -28,19 +28,34 @@ class Product(models.Model):
     @property
     def image_url(self):
         """
-        Auto-generates a product image from the internet based on the product's name.
-        Uses product ID as a lock so the image never changes on refresh.
+        Generates a professional Typography Placeholder image.
+        Uses Category for background colors and Product Name for text.
         """
-        if self.name:
-            # First word nikalta hai (e.g., "Nescafe Gold" -> "Nescafe")
-            keyword = self.name.split()[0].lower()
-            safe_keyword = urllib.parse.quote(keyword)
-        else:
-            safe_keyword = "grocery"
+        import urllib.parse
         
-        # Free Image API: Fetch an image related to the keyword + food
-        # lock={self.id} ensures ki Har baar refresh karne par image change na ho
-        return f"https://loremflickr.com/400/400/{safe_keyword},food,product?lock={self.id}"
+        # Naam ko format karo (Sirf pehle 2 words lenge taaki image clean lage)
+        if self.name:
+            words = self.name.split()[:2]
+            display_text = " ".join(words)
+            safe_text = urllib.parse.quote(display_text)
+        else:
+            safe_text = "Item"
+
+      
+        bg_color = "F8F9FA"
+        if self.category:
+            cat_name = self.category.name.lower()
+            if 'dairy' in cat_name or 'fresh' in cat_name:
+                bg_color = "E3F2FD" 
+            elif 'sweet' in cat_name or 'regional' in cat_name:
+                bg_color = "FCE4EC" 
+            elif 'health' in cat_name or 'baby' in cat_name:
+                bg_color = "E8F5E9" 
+            elif 'gourmet' in cat_name:
+                bg_color = "FFF8E1" 
+
+        # Professional typography image API
+        return f"https://placehold.co/400x400/{bg_color}/212529?text={safe_text}&font=Montserrat"
 
     @property
     def time_left(self):
@@ -132,3 +147,15 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.full_name
+    
+
+
+class Order(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='orders')
+    locked_price = models.FloatField()
+    order_time = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, default='Reserved') # Status can be: Reserved, Picked Up, Cancelled
+
+    def __str__(self):
+        return f"{self.customer.full_name} grabbed {self.product.name} @ ₹{self.locked_price}"

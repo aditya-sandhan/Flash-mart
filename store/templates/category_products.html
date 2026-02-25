@@ -46,7 +46,7 @@
                         <h4 class="fw-bold text-danger mb-0">₹{{ product.current_price }}</h4>
                         <span class="text-muted text-decoration-line-through small">₹{{ product.original_price }}</span>
                     </div>
-                    <a href="#" class="btn btn-dark w-100 py-2 fw-bold rounded-3">Grab Now</a>
+                    <a href="{% url 'grab_product' product.id %}" class="btn btn-dark w-100 py-2 fw-bold rounded-3">Grab Now ⚡</a>
                 </div>
             </div>
         </div>

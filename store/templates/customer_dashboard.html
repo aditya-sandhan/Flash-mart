@@ -1,29 +1,78 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} {% block title %}My Hub | Flash-Mart{% endblock %} {% block content %}
 <div class="container py-5">
     <div class="row mb-4">
-        <div class="col-12 text-center">
-            <h1 class="fw-bold">Welcome, {{ customer.full_name }}! 👋</h1>
-            <p class="text-muted">Tracking your high-value price drops here.</p>
+        <div class="col-12">
+            <h5 class="text-muted mb-1">Welcome back,</h5>
+            <h2 class="fw-bold text-primary">🛒 {{ customer.full_name }}'s Hub</h2>
         </div>
     </div>
 
-    <div class="row g-4 justify-content-center">
+    <div class="row g-4 mb-5">
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 p-4 text-center rounded-4">
-                <h3 class="fw-bold text-primary">0</h3>
-                <p class="mb-0 text-muted small fw-bold">Items in Watchlist</p>
+            <div class="card shadow-sm border-0 p-4 rounded-4 bg-white">
+                <p class="text-muted small fw-bold mb-1">Total Items Grabbed</p>
+                <h3 class="fw-bold text-dark mb-0">{{ total_orders }}</h3>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 p-4 text-center rounded-4">
-                <h3 class="fw-bold text-success">₹0.00</h3>
-                <p class="mb-0 text-muted small fw-bold">Total Savings</p>
+            <div class="card shadow-sm border-0 p-4 rounded-4 bg-success-subtle text-success">
+                <p class="small fw-bold mb-1">Total Money Saved 💸</p>
+                <h3 class="fw-bold mb-0">₹{{ total_savings }}</h3>
             </div>
         </div>
     </div>
 
-    <div class="text-center mt-5">
-        <a href="{% url 'home' %}" class="btn btn-warning px-5 py-3 fw-bold rounded-pill">Start Shopping Now</a>
+    <h4 class="fw-bold mb-4">Your Active Reservations</h4>
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="py-3 px-4 text-muted small fw-bold">Item Details</th>
+                        <th class="py-3 px-4 text-muted small fw-bold">Shop / Pickup Location</th>
+                        <th class="py-3 px-4 text-muted small fw-bold">Locked Price</th>
+                        <th class="py-3 px-4 text-muted small fw-bold">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td class="py-3 px-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-light rounded p-2 text-center" style="width: 50px; height: 50px;">
+                                    <span class="fs-4">📦</span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ order.product.name }}</h6>
+                                    <span class="text-muted small">Grabbed: {{ order.order_time|date:"M d, h:i A" }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <h6 class="mb-0 fw-bold">{{ order.product.shopkeeper.shop_name }}</h6>
+                            <span class="text-muted small">{{ order.product.shopkeeper.address }}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <h6 class="mb-0 fw-bold text-success">₹{{ order.locked_price }}</h6>
+                            <span class="text-decoration-line-through text-muted small">₹{{ order.product.original_price }}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold">{{ order.status }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <h1 class="display-4 opacity-25 mb-3">🛍️</h1>
+                            <h5 class="fw-bold">No items grabbed yet</h5>
+                            <p class="text-muted">Head to the marketplace before the deals expire!</p>
+                            <a href="{% url 'home' %}" class="btn btn-dark px-4 fw-bold rounded-pill mt-2">Explore Deals</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -17,4 +17,6 @@ urlpatterns = [
     path('dashboard/customer/', views.customer_dashboard, name='customer_dashboard'),
     path('categories/', views.category_list, name='category_list'),
     path('category/<int:cat_id>/', views.category_products, name='category_products'),
+    path('grab/<int:product_id>/', views.grab_product, name='grab_product'),
+    path('order/<int:order_id>/pickup/', views.mark_picked_up, name='mark_picked_up'),
 ]

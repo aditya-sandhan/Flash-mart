@@ -1,25 +1,33 @@
 # Short imports including helper and Category
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Product, Shopkeeper, Category
+from .models import Product, Shopkeeper, Category,Order
 from .models import Customer 
 from django.utils import timezone # For handling dates
 # Create your views here.
 
 # Isko update kar
 def home(request):
-    products = Product.objects.all().order_by('expiry_time') 
-    categories = Category.objects.all() 
+    now = timezone.now()
+    
+    # 1. Product Expire nahi hona chahiye (expiry_time > now)
+    # 2. Product kisi ne Grab nahi kiya hona chahiye 
+    
+    products = Product.objects.filter(
+        expiry_time__gt=now,
+        orders__isnull=True  # Sirf wo products jo abhi tak sold nahi hue
+    ).order_by('expiry_time')
+    
+    categories = Category.objects.all()
     
     context = {
         'products': products,
-        'categories': categories 
+        'categories': categories
     }
     return render(request, 'home.html', context)
 
 def select_role(request):
-    return render(request, 'role_selection.html')
-
-
+    """Simple view to let users choose between Shopkeeper or Customer"""
+    return render(request, 'select_role.html')
 
 def shopkeeper_signup(request):
     if request.method == 'POST':
@@ -104,27 +112,53 @@ def login_view(request):
     return render(request, 'login.html')
 
 def shop_dashboard(request):
-    """Secured dashboard with Product fetching"""
+    """Shows the shopkeeper their products and active customer orders"""
     if request.session.get('user_role') != 'shopkeeper':
         return redirect('login')
 
     shop = Shopkeeper.objects.get(id=request.session['user_id'])
-    # FETCH PRODUCTS FOR THIS SHOPKEEPER
+    
+    # 1. Fetch their active inventory
     products = Product.objects.filter(shopkeeper=shop).order_by('expiry_time')
     
-    # PASS PRODUCTS TO TEMPLATE
-    return render(request, 'shop_dashboard.html', {'shop': shop, 'products': products})
+    # 2. THE NEW LOGIC: Fetch orders related to THIS shop's products
+    orders = Order.objects.filter(product__shopkeeper=shop).order_by('-order_time')
+    
+    # 3. Calculate total money made from locked orders
+    total_revenue = sum(order.locked_price for order in orders)
+
+    context = {
+        'shop': shop,
+        'products': products,
+        'orders': orders,
+        'total_revenue': round(total_revenue, 2)
+    }
+    return render(request, 'shop_dashboard.html', context)
+
+
 
 
 def customer_dashboard(request):
-   
+    """Secures and displays customer-specific data & reservations"""
     if request.session.get('user_role') != 'customer':
         return redirect('login')
 
-   
     customer = Customer.objects.get(id=request.session['user_id'])
-    return render(request, 'customer_dashboard.html', {'customer': customer})
+    
+    # 1. Fetch all orders for this specific customer (Newest first)
+    orders = Order.objects.filter(customer=customer).order_by('-order_time')
+    
+    # 2. Calculate the  Total Savings!
+    total_savings = sum((order.product.original_price - order.locked_price) for order in orders)
 
+    context = {
+        'customer': customer,
+        'orders': orders,
+        'total_orders': orders.count(),
+        'total_savings': round(total_savings, 2)
+    }
+    
+    return render(request, 'customer_dashboard.html', context)
 
 def logout_view(request):
     """Clears the user's session and redirects to home."""
@@ -184,3 +218,47 @@ def category_products(request, cat_id):
     # Sirf us specific category ke products uthao, expiry ke hisaab se sort karke
     products = Product.objects.filter(category=category).order_by('expiry_time')
     return render(request, 'category_products.html', {'category': category, 'products': products})
+
+
+def grab_product(request, product_id):
+    """Locks the exact current price and reserves the item for the customer"""
+    
+    # 1. Sirf logged-in customers kharid sakte hain
+    if request.session.get('user_role') != 'customer':
+        return redirect('login')
+        
+    customer = Customer.objects.get(id=request.session['user_id'])
+    product = get_object_or_404(Product, id=product_id)
+    
+    # 2. Safety Check: Agar product expire ho gaya hai toh reject kar do
+    if timezone.now() >= product.expiry_time:
+        return redirect('home') # (Future idea: Yahan error message dikha sakte hain)
+        
+    # 3. THE MAGIC: Lock the exact price at this specific second
+    locked_price = product.current_price
+    
+    # 4. Save the order to database
+    Order.objects.create(
+        customer=customer,
+        product=product,
+        locked_price=locked_price,
+        status='Reserved'
+    )
+    
+    # 5. Redirect user to their dashboard to see their reservation
+    return redirect('customer_dashboard')
+
+
+def mark_picked_up(request, order_id):
+    """Changes the order status when the customer collects the item"""
+    if request.session.get('user_role') != 'shopkeeper':
+        return redirect('login')
+        
+    order = get_object_or_404(Order, id=order_id)
+    
+    # 🚨 Security Check: Ensure the shopkeeper owns this product
+    if order.product.shopkeeper.id == request.session['user_id']:
+        order.status = 'Picked Up'
+        order.save()
+        
+    return redirect('shop_dashboard')
