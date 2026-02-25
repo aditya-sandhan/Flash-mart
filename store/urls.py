@@ -9,7 +9,6 @@ urlpatterns = [
     path('product/<int:product_id>/', views.product_detail, name='product_detail'),  
     path('signup/customer/', views.customer_signup, name='customer_signup'),
     path('signup/shopkeeper/', views.shopkeeper_signup, name='shopkeeper_signup'),
-    path('signup/franchise/', views.franchise_signup, name='franchise_signup'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('dashboard/shop/', views.shop_dashboard, name='shop_dashboard'), # Placeholder

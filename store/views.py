@@ -27,7 +27,7 @@ def home(request):
 
 def select_role(request):
     """Simple view to let users choose between Shopkeeper or Customer"""
-    return render(request, 'select_role.html')
+    return render(request, 'role_selection.html')
 
 def shopkeeper_signup(request):
     if request.method == 'POST':
@@ -83,8 +83,7 @@ def customer_signup(request):
         
     return render(request, 'customer_signup.html')
 
-def franchise_signup(request):
-    return render(request, 'franchise_signup.html')
+
 
 def login_view(request):
     """Handles authentication for both Customers and Shopkeepers"""
