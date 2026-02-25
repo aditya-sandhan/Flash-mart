@@ -98,6 +98,13 @@ def shop_dashboard(request):
     # PASS PRODUCTS TO TEMPLATE
     return render(request, 'shop_dashboard.html', {'shop': shop, 'products': products})
 
+
+def logout_view(request):
+    """Clears the user's session and redirects to home."""
+    # Remove all session data for the current session
+    request.session.flush()
+    return redirect('home')
+
 def products_list(request):
     """Show all products (used by 'View All Deals' links)."""
     products = Product.objects.all().order_by('-created_at')

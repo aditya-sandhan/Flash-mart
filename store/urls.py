@@ -12,6 +12,7 @@ urlpatterns = [
     path('signup/shopkeeper/', views.shopkeeper_signup, name='shopkeeper_signup'),
     path('signup/franchise/', views.franchise_signup, name='franchise_signup'),
     path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
     path('dashboard/shop/', views.shop_dashboard, name='shop_dashboard'), # Placeholder
     path('dashboard/shop/add-product/', views.add_product, name='add_product'),
 ]
