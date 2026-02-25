@@ -1,3 +1,4 @@
+import urllib.parse
 from django.db import models
 from django.utils import timezone
 # Create your models here.
@@ -24,6 +25,22 @@ class Product(models.Model):
     original_price = models.FloatField()
     expiry_time = models.DateTimeField() # Name kept as expiry_time
     created_at = models.DateTimeField(auto_now_add=True)
+    @property
+    def image_url(self):
+        """
+        Auto-generates a product image from the internet based on the product's name.
+        Uses product ID as a lock so the image never changes on refresh.
+        """
+        if self.name:
+            # First word nikalta hai (e.g., "Nescafe Gold" -> "Nescafe")
+            keyword = self.name.split()[0].lower()
+            safe_keyword = urllib.parse.quote(keyword)
+        else:
+            safe_keyword = "grocery"
+        
+        # Free Image API: Fetch an image related to the keyword + food
+        # lock={self.id} ensures ki Har baar refresh karne par image change na ho
+        return f"https://loremflickr.com/400/400/{safe_keyword},food,product?lock={self.id}"
 
     @property
     def time_left(self):
@@ -105,3 +122,13 @@ class Shopkeeper(models.Model):
 
     def __str__(self):
         return f"{self.shop_name} - {self.full_name}"
+    
+
+class Customer(models.Model):
+    full_name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.full_name

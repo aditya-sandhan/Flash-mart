@@ -23,6 +23,28 @@
         border-radius: 20px;
         font-size: 0.8rem;
     }
+    
+    .cat-hover:hover {
+        background-color: #ffc107;
+        color: black;
+        border-color: #ffc107;
+        transform: translateY(-2px);
+        transition: all 0.2s;
+    }
+    /* 🌟 NEW: Premium Image Hover Effects */
+    
+    .img-container {
+        height: 200px;
+        border-radius: 12px;
+    }
+    
+    .img-container:hover img {
+        transform: scale(1.1);
+    }
+    
+    .img-container:hover .hover-overlay {
+        opacity: 0.1 !important;
+    }
 </style>
 {% endblock %} {% block content %}
 <header class="hero-section text-center">
@@ -34,11 +56,23 @@
         </p>
     </div>
 </header>
+<section class="container mt-n4 position-relative" style="top: -30px; z-index: 10;">
+    <div class="bg-white rounded-4 shadow-sm p-4 border">
+        <h6 class="fw-bold text-muted mb-3 text-uppercase small">Shop by Category</h6>
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+            {% for cat in categories %}
+            <a href="{% url 'category_products' cat.id %}" class="btn btn-outline-dark rounded-pill px-4 py-2 fw-bold cat-hover">
+                {{ cat.name }}
+            </a> {% empty %}
+            <span class="text-muted small">No categories yet.</span> {% endfor %}
+        </div>
+    </div>
+</section>
 
 <main class="container py-5">
     <div class="d-flex justify-content-between align-items-end mb-4">
         <h3 class="fw-bold mb-0">Live Deals 🔥</h3>
-        <a href="{% url 'products_list' %}" class="text-decoration-none small fw-bold text-warning">View All Deals →</a>
+        <a href="{% url 'home' %}" class="text-decoration-none small fw-bold text-warning">View All Deals →</a>
     </div>
 
     <div class="row g-4">
@@ -50,10 +84,9 @@
                     <span class="text-muted small fw-bold">{{ product.time_left }}</span>
                 </div>
 
-                <div class="text-center py-4 bg-light rounded-4 mb-3">
-                    {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded" style="max-height: 150px;"> {% else %}
-                    <span class="display-4">📦</span> {% endif %}
+                <div class="text-center bg-light mb-3 overflow-hidden position-relative img-container">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.3s ease;">
+                    <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-0 hover-overlay" style="transition: opacity 0.3s ease;"></div>
                 </div>
 
                 <div class="card-body p-0">
@@ -65,8 +98,7 @@
                         <span class="text-muted text-decoration-line-through small">₹{{ product.original_price }}</span>
                     </div>
 
-                    <a href="{% url 'product_detail' product.id %}" class="btn btn-dark w-100 py-2 fw-bold rounded-3">Grab Now</a>
-                    <a href="{% url 'products_list' %}" class="text-decoration-none small fw-bold text-warning">View All Deals →</a>
+                    <a href="#" class="btn btn-dark w-100 py-2 fw-bold rounded-3">Grab Now</a>
                 </div>
             </div>
         </div>
@@ -77,4 +109,62 @@
         {% endfor %}
     </div>
 </main>
+
+<section class="bg-light py-5 mt-5 border-top border-bottom">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-bold mb-2">The Flash-Mart Secret</span>
+            <h2 class="fw-black display-6">How Decay-Pricing Works ⏳</h2>
+            <p class="text-muted">Don't wait too long, or someone else will grab it!</p>
+        </div>
+
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="p-4">
+                    <div class="display-3 mb-3">🏪</div>
+                    <h4 class="fw-bold">1. Premium Stock Listed</h4>
+                    <p class="text-muted small">Top supermarkets list their high-value, near-expiry products at standard MRP.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4 position-relative">
+                    <div class="d-none d-md-block position-absolute top-0 start-50 translate-middle border-top border-2 border-warning w-100" style="z-index: -1;"></div>
+                    <div class="display-3 mb-3">📉</div>
+                    <h4 class="fw-bold">2. Prices Drop Every Hour</h4>
+                    <p class="text-muted small">The clock ticks, and the price falls. The closer to expiry, the cheaper it gets.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4">
+                    <div class="display-3 mb-3">🛒</div>
+                    <h4 class="fw-bold">3. You Grab the Deal</h4>
+                    <p class="text-muted small">Hit the bottom price and checkout before another smart shopper steals your deal!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container my-5 py-4">
+    <div class="bg-dark text-white rounded-4 shadow-lg p-4 p-md-5 position-relative overflow-hidden">
+        <div class="position-absolute top-0 end-0 opacity-10 pe-none" style="transform: scale(2); transform-origin: top right;">
+            <h1 class="display-1">📦</h1>
+        </div>
+
+        <div class="row align-items-center position-relative" style="z-index: 2;">
+            <div class="col-lg-8 mb-4 mb-lg-0">
+                <span class="badge bg-warning text-dark mb-2 px-3 py-2 rounded-pill fw-bold">For Retailers & Supermarts</span>
+                <h2 class="fw-black mb-3">Stop throwing away expired stock.</h2>
+                <p class="lead text-light opacity-75 mb-0" style="max-width: 600px;">
+                    Turn your aging inventory into liquid cash in hours. Join Flash-Mart's seller network and recover costs before items expire.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="{% url 'shopkeeper_signup' %}" class="btn btn-warning btn-lg px-5 py-3 fw-bold rounded-pill shadow">
+                        Open Your Shop →
+                    </a>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html' %} {% block title %}Customer Signup | Flash-Mart{% endblock %} {% block content %}
+<div class="bg-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="text-center mb-4">
+                    <h1 class="fw-bold text-primary">🛒 Customer Portal</h1>
+                    <p class="text-muted">Create an account to grab high-value deals before they're gone.</p>
+                </div>
+
+                <div class="card shadow border-0">
+                    <div class="card-body p-4">
+                        <form method="POST">
+                            {% csrf_token %}
+
+                            <h5 class="mb-3 text-uppercase small fw-bold text-muted">Account Details</h5>
+
+                            <div class="mb-3">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" name="name" class="form-control" placeholder="Enter your full name" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" name="email" class="form-control" placeholder="Enter your email address" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Create Password</label>
+                                <input type="password" name="password" class="form-control" placeholder="Minimum 8 characters" required>
+                            </div>
+
+                            {% if error %}
+                            <div class="alert alert-danger py-2 small text-center mb-3 fw-bold">
+                                ⚠️ {{ error }}
+                            </div>
+                            {% endif %}
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">Start Shopping</button>
+                                <a href="{% url 'select_role' %}" class="btn btn-link text-muted">Change Role</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <p class="text-center mt-4 text-muted small">
+                    By registering, you agree to Flash-Mart's Terms of Service.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

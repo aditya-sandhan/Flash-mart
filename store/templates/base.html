@@ -28,6 +28,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-3">
         <div class="container">
             <a class="navbar-brand fw-bold text-warning fs-4" href="{% url 'home' %}">⚡ Flash-Mart</a>
+            <a href="{% url 'category_list' %}" class="btn btn-light btn-sm fw-bold ms-3 border">📑 Browse Categories</a>
             <div class="d-flex gap-2">
                 {% if request.session.user_role %} {% if request.session.user_role == 'shopkeeper' %}
                 <a href="{% url 'shop_dashboard' %}" class="btn btn-dark btn-sm px-3 fw-bold">My Dashboard</a> {% else %}
@@ -47,6 +48,7 @@
     <footer class="bg-white py-4 border-top text-center text-muted small mt-5">
         <p class="mb-0">© 2026 Flash-Mart. Built for high-speed commerce.</p>
     </footer>
+
 
 </body>
 

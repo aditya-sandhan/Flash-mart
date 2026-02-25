@@ -1,15 +1,19 @@
 # Short imports including helper and Category
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Product, Shopkeeper, Category
+from .models import Customer 
 from django.utils import timezone # For handling dates
 # Create your views here.
 
+# Isko update kar
 def home(request):
-    products = Product.objects.all().order_by('-created_at')
-    context = {
-        'products': products
-    }
+    products = Product.objects.all().order_by('expiry_time') 
+    categories = Category.objects.all() 
     
+    context = {
+        'products': products,
+        'categories': categories 
+    }
     return render(request, 'home.html', context)
 
 def select_role(request):
@@ -42,46 +46,59 @@ def shopkeeper_signup(request):
 
 
 
+
+
 def customer_signup(request):
+    """Creates a customer with error handling and auto-logs them in"""
     if request.method == 'POST':
-        # Customer basic info
         name = request.POST.get('name')
         email = request.POST.get('email')
         password = request.POST.get('password')
-
-        print(f"New Customer: {name} ({email})")
-        return redirect('home')
-
+        
+        #Check if email already exists before saving!
+        if Customer.objects.filter(email=email).exists():
+            return render(request, 'customer_signup.html', {
+                'error': 'This email is already registered. Please login instead.'
+            })
+        
+        # Save to database
+        new_customer = Customer.objects.create(
+            full_name=name, email=email, password=password
+        )
+        
+        # Auto-login session creation
+        request.session['user_role'] = 'customer'
+        request.session['user_id'] = new_customer.id
+        
+       
+        return redirect('customer_dashboard') 
+        
     return render(request, 'customer_signup.html')
-
 
 def franchise_signup(request):
     return render(request, 'franchise_signup.html')
 
 def login_view(request):
-    """
-    Handles unified authentication for both Customers and Shopkeepers.
-    Redirects users to their respective dashboards based on role.
-    """
+    """Handles authentication for both Customers and Shopkeepers"""
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
 
-        # Check if user exists in Shopkeeper records
+        # 1. Check Shopkeeper first
         shopkeeper = Shopkeeper.objects.filter(email=email, password=password).first()
         if shopkeeper:
-            # Store shopkeeper identity in session
             request.session['user_role'] = 'shopkeeper'
             request.session['user_id'] = shopkeeper.id
-            return redirect('shop_dashboard') # We will create this URL next
+            return redirect('shop_dashboard')
 
-        # Check if user exists in Customer records (Placeholder for now)
-        # customer = Customer.objects.filter(email=email, password=password).first()
-        # if customer:
-        #     request.session['user_role'] = 'customer'
-        #     return redirect('home')
+        # 2. Check Customer
+        customer = Customer.objects.filter(email=email, password=password).first()
+        if customer:
+            request.session['user_role'] = 'customer'
+            request.session['user_id'] = customer.id
+            # 🚨 REDIRECT FIX: Send to dashboard, not home
+            return redirect('customer_dashboard')
 
-        # Handle invalid credentials
         return render(request, 'login.html', {'error': 'Invalid Email or Password'})
 
     return render(request, 'login.html')
@@ -97,6 +114,16 @@ def shop_dashboard(request):
     
     # PASS PRODUCTS TO TEMPLATE
     return render(request, 'shop_dashboard.html', {'shop': shop, 'products': products})
+
+
+def customer_dashboard(request):
+   
+    if request.session.get('user_role') != 'customer':
+        return redirect('login')
+
+   
+    customer = Customer.objects.get(id=request.session['user_id'])
+    return render(request, 'customer_dashboard.html', {'customer': customer})
 
 
 def logout_view(request):
@@ -142,3 +169,18 @@ def add_product(request):
     # GET REQUEST: Database se saari categories uthao aur form ko bhejo
     categories = Category.objects.all()
     return render(request, 'add_product_form.html', {'categories': categories})
+
+
+
+
+def category_list(request):
+    """Displays all available categories with an attractive UI"""
+    categories = Category.objects.all()
+    return render(request, 'category_list.html', {'categories': categories})
+
+def category_products(request, cat_id):
+    """Filters products by the selected category"""
+    category = get_object_or_404(Category, id=cat_id)
+    # Sirf us specific category ke products uthao, expiry ke hisaab se sort karke
+    products = Product.objects.filter(category=category).order_by('expiry_time')
+    return render(request, 'category_products.html', {'category': category, 'products': products})
