@@ -37,66 +37,55 @@ class Product(models.Model):
         hours_passed = passed_life / 3600
         days_passed = passed_life / (3600 * 24)
 
-        # --------CATEGORY-BASED DECAY LOGIC--------
-        cat_name = self.category.name.lower()
-
-        # 1. PREMIUM DAIRY (Fast, Hourly, Linear)
-        if 'dairy' in cat_name or 'fresh' in cat_name:
-            
-            # Cheese/Paneer: Consistent hourly drop
-            final_price = self.original_price * (1 - (self.category.decay_rate * hours_passed))
-
-        # 2. REGIONAL SPECIALTIES / SWEETS (Exponential Crash)
-        elif 'regional' in cat_name or 'sweets' in cat_name:
-            
-            # Nashik Sweets: Price stays stable, then crashes 
-            # Math: Original * (Remaining Ratio ** 1.5)
-            final_price = self.original_price * (remaining_ratio ** 1.5)
-
-        # 3. BABY CARE & HEALTH (Steady, Trust-based)
-        elif 'baby' in cat_name or 'health' in cat_name:
-            
-            # Slow Daily Decay (Never goes below 50% for quality trust)
-            discount = self.original_price * (self.category.decay_rate * days_passed)
-            final_price = max(self.original_price - discount, self.original_price * 0.5)
-
-        # 4. GOURMET / IMPORTED (Daily Linear)
-        elif 'gourmet' in cat_name or 'imported' in cat_name:
-            
-            # Olive Oil/Coffee: Drops by the day
-            discount = self.original_price * (self.category.decay_rate * days_passed)
-            final_price = self.original_price - discount
-
-        # 5. DEFAULT LOGIC (Baaki bache huye products ke liye)
-        else:
-            # Pehle check karo: Ghante (H) ginn-ne hain ya Din (D)?
-            if self.category.decay_unit == 'H':
-                samay = hours_passed
-            else:
-                samay = days_passed
-            
-            # Simple Formula: Original Price - (Price * Rate * Samay)
-            total_discount = self.original_price * self.category.decay_rate * samay
+        #  THE SAFETY NET: Agar Category NAHI hai toh crash mat karo!
+        if self.category is None:
+            # Default 5% hourly discount if no category is assigned yet
+            total_discount = self.original_price * 0.05 * hours_passed
             final_price = self.original_price - total_discount
+            
+        else:
+            # --------CATEGORY-BASED DECAY LOGIC--------
+            cat_name = self.category.name.lower()
 
+            if 'dairy' in cat_name or 'fresh' in cat_name:
+                final_price = self.original_price * (1 - (self.category.decay_rate * hours_passed))
 
-        # Minimum price floor: 15% of original price to ensure it's not too cheap
+            elif 'regional' in cat_name or 'sweets' in cat_name:
+                final_price = self.original_price * (remaining_ratio ** 1.5)
+
+            elif 'baby' in cat_name or 'health' in cat_name:
+                discount = self.original_price * (self.category.decay_rate * days_passed)
+                final_price = max(self.original_price - discount, self.original_price * 0.5)
+
+            elif 'gourmet' in cat_name or 'imported' in cat_name:
+                discount = self.original_price * (self.category.decay_rate * days_passed)
+                final_price = self.original_price - discount
+
+            else:
+                if self.category.decay_unit == 'H':
+                    samay = hours_passed
+                else:
+                    samay = days_passed
+                total_discount = self.original_price * self.category.decay_rate * samay
+                final_price = self.original_price - total_discount
+
+        # Minimum price floor: 15% of original price
         floor_price = self.original_price * 0.15
         return round(max(final_price, floor_price), 2)
+    
     
 class Shopkeeper(models.Model):
     # User ki personal details
     full_name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True) # Unique taaki ek email se do dukan na bane
+    email = models.EmailField(unique=True) 
     
     # Dukan ki details
     shop_name = models.CharField(max_length=200)
     address = models.TextField()
     
-    # Login ke liye (Abhi ke liye simple password rakh rahe hain)
+    # Login ke liye
     password = models.CharField(max_length=100)
-    
-    created_at = models.DateTimeField(auto_now_add=True) # Kab register kiya
+    created_at = models.DateTimeField(auto_now_add=True) 
 
     def __str__(self):
         return f"{self.shop_name} - {self.full_name}"
