@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Shopkeeper Signup | Flash-Mart</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="text-center mb-4">
+                    <h1 class="fw-bold text-success">🏪 Shopkeeper Portal</h1>
+                    <p class="text-muted">Register your store to start clearing inventory fast.</p>
+                </div>
+
+                <div class="card shadow border-0">
+                    <div class="card-body p-4">
+                        <form method="POST">
+                            {% csrf_token %}
+
+                            <h5 class="mb-3 text-uppercase small fw-bold text-muted">Personal Details</h5>
+
+                            <div class="mb-3">
+                                <label class="form-label">Owner's Full Name</label>
+                                <input type="text" name="name" class="form-control" placeholder="Adi Sandhan" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" name="email" class="form-control" placeholder="adi@example.com" required>
+                            </div>
+
+                            <hr class="my-4">
+                            <h5 class="mb-3 text-uppercase small fw-bold text-muted">Shop Information</h5>
+
+                            <div class="mb-3">
+                                <label class="form-label">Business / Shop Name</label>
+                                <input type="text" name="shop_name" class="form-control" placeholder="e.g. Flash-Mart Nashik" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Physical Address</label>
+                                <textarea name="address" class="form-control" rows="3" placeholder="Shop number, Street, Area, City" required></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Create Password</label>
+                                <input type="password" name="password" class="form-control" placeholder="Minimum 8 characters" required>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-success btn-lg">Register & Open Shop</button>
+                                <a href="{% url 'select_role' %}" class="btn btn-link text-muted">Change Role</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <p class="text-center mt-4 text-muted small">
+                    By registering, you agree to Flash-Mart's Seller Terms.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

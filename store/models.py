@@ -78,3 +78,20 @@ class Product(models.Model):
         # Minimum price floor: 15% of original price to ensure it's not too cheap
         floor_price = self.original_price * 0.15
         return round(max(final_price, floor_price), 2)
+    
+class Shopkeeper(models.Model):
+    # User ki personal details
+    full_name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True) # Unique taaki ek email se do dukan na bane
+    
+    # Dukan ki details
+    shop_name = models.CharField(max_length=200)
+    address = models.TextField()
+    
+    # Login ke liye (Abhi ke liye simple password rakh rahe hain)
+    password = models.CharField(max_length=100)
+    
+    created_at = models.DateTimeField(auto_now_add=True) # Kab register kiya
+
+    def __str__(self):
+        return f"{self.shop_name} - {self.full_name}"
