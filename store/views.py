@@ -89,46 +89,42 @@ def login_view(request):
     return render(request, 'login.html')
 
 def shop_dashboard(request):
-    """
-    Secures the dashboard and displays shop-specific data. [cite: 2025-12-26]
-    """
-    # Security Check: Only allow logged-in shopkeepers [cite: 2025-12-26]
+    """Secured dashboard with Product fetching"""
     if request.session.get('user_role') != 'shopkeeper':
         return redirect('login')
 
-    # Fetch shop data using session ID [cite: 2025-12-26]
     shop = Shopkeeper.objects.get(id=request.session['user_id'])
-    return render(request, 'shop_dashboard.html', {'shop': shop})
+    # FETCH PRODUCTS FOR THIS SHOPKEEPER
+    products = Product.objects.filter(shopkeeper=shop).order_by('expiry_time')
+    
+    # PASS PRODUCTS TO TEMPLATE
+    return render(request, 'shop_dashboard.html', {'shop': shop, 'products': products})
 
 
+from .models import Product, Shopkeeper, Category # Category ko import karna mat bhoolna
 
 def add_product(request):
-    """
-    Handles secure product creation by the logged-in shopkeeper. [cite: 2025-12-26]
-    """
-    # 1. Access security: Only shopkeepers can add products [cite: 2025-12-26]
+    """Synchronized Save Logic with Dynamic Categories"""
     if request.session.get('user_role') != 'shopkeeper':
         return redirect('login')
 
     if request.method == 'POST':
-        # 2. Extract data from form [cite: 2025-12-26]
-        p_name = request.POST.get('name')
-        mrp = request.POST.get('mrp')
-        current_p = request.POST.get('start_price')
-        exp_date = request.POST.get('expiry')
-
-        # 3. Link product to the specific shopkeeper [cite: 2025-12-26]
         owner = Shopkeeper.objects.get(id=request.session['user_id'])
-
-        # 4. Save to Database [cite: 2025-12-26]
-        Product.objects.create(
-            name=p_name,
-            original_price=mrp,
-            current_price=current_p,
-            expiry_date=exp_date,
-            # (Note: Ensure your Product model has a Foreignkey to Shopkeeper)
-        )
         
+        # 1. Jo category form se aayi hai, uski ID pakdo
+        cat_id = request.POST.get('category')
+        selected_category = Category.objects.get(id=cat_id) if cat_id else None
+
+        # 2. Product save karte waqt category bhi attach kar do
+        Product.objects.create(
+            shopkeeper=owner,
+            category=selected_category, # <--- THE FIX
+            name=request.POST.get('name'),
+            original_price=request.POST.get('mrp'),
+            expiry_time=request.POST.get('expiry')
+        )
         return redirect('shop_dashboard')
 
-    return render(request, 'add_product_form.html')
+    # GET REQUEST: Database se saari categories uthao aur form ko bhejo
+    categories = Category.objects.all()
+    return render(request, 'add_product_form.html', {'categories': categories})

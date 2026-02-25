@@ -14,10 +14,15 @@ class Category(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=100)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    # Shopkeeper link add kiya
+    shopkeeper = models.ForeignKey('Shopkeeper', on_delete=models.CASCADE, related_name='products', null=True)
+    
+    # Category ko filhal allow null kiya taaki tera current form chal sake bina crash hue
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True) 
+    
     original_price = models.FloatField()
-    expiry_time = models.DateTimeField()
-    created_at = models.DateTimeField(auto_now_add = True)
+    expiry_time = models.DateTimeField() # Name kept as expiry_time
+    created_at = models.DateTimeField(auto_now_add=True)
 
     @property
     def current_price(self):
